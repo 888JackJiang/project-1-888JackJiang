@@ -1,24 +1,6 @@
 
 
 
-'''
-the main idea:Each level has corresponding scores → Add up the scores of all candidates → The one with the highest score wins.
-'''
-
-
-
-
-'''
-
-the main idea of IRV: The IRV (Instant Runoff Voting) method automatically conducts multiple elections. 
-    In each round, the loser is eliminated, and the second-choice preferences of the voters are transferred to the next candidate.
-    This process continues until one candidate obtains more than half of the remaining votes.
-
-'''
-
-
-
-
 
 
 def count_votes(ballots, preference=0, sort_by='count'):
@@ -72,14 +54,25 @@ def count_votes(ballots, preference=0, sort_by='count'):
         # we need to sort the vote_counts( which is the values from the dictionary) firstly in ascending order
         sorted_vote_counts = sorted(cadi_vote_dict.values())  # ascending by number of votes
         
-    
-
+        # set the initial empty list to store the corresponding candidate number after sorting
+        sorted_candidates =[]
+        # create a one-to-one mapping from vote count to candidate
+        for i in range(len(sorted_vote_counts)):
+            # for each vote count to get the corresponding value in dictionary
+            current_value = sorted_vote_counts[i]
+            # loop through the dictionary to find the corresponding candidate number
+            for key, value in cadi_vote_dict.items():   # key and value for finding each tuple in cadi_vote_dict.items()
+                if value == current_value:
+                    sorted_candidates.append(key)
+                    
     # This is the reverse process above we need to sort candidate firstly
     else:  # sort_by == 'candidate'
         sorted_candidates =  candidates # actually we crate the candidates in ascending order already
         # we have already corresponding vote_counts for each candidate already
         sorted_vote_counts = vote_counts
     return sorted_candidates, sorted_vote_counts
+
+
 
 
 
