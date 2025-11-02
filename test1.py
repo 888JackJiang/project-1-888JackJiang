@@ -3,6 +3,8 @@
 
 
 
+
+
 def count_votes(ballots, preference=0, sort_by='count'):
     """
     Count how many votes each candidate gotten at a given preference level.
@@ -64,16 +66,20 @@ def count_votes(ballots, preference=0, sort_by='count'):
         for i in range(len(sorted_vote_counts)):
             current_value = sorted_vote_counts[i]
             # With the default sorting by 'count', when there are tied candidates with the same number of votes, you can return them in any order in candidates
-            # there we test the newest one whether or not equal to the previous one.
-            if current_value == sorted_vote_counts[i-1]: 
+            # there we test the newest one whether or not equal to the next one.
+            if i < len(sorted_vote_counts)-1:
+                if current_value == sorted_vote_counts[i+1]: 
                 
-                # if same we donn't consider it because we have already added the candidate number for the previous one
-                continue 
+                    # if same we donn't consider it because we have already added the candidate number for the next one
+                    continue 
+            
+            ###### why we do the step before avoid appending many times below.######
             
             # loop through the dictionary to find the corresponding candidate number
             for key, value in cadi_vote_dict.items():   # key and value for finding each tuple in cadi_vote_dict.items()
                 if value == current_value:
                     sorted_candidates.append(key)
+        
         
         
 
@@ -93,10 +99,7 @@ def count_votes(ballots, preference=0, sort_by='count'):
                     sorted_vote_counts.append(value)
         
         
-    return sorted_candidates, sorted_vote_counts
-
-
-
-
-
+    candidates = sorted_candidates
+    vote_counts = sorted_vote_counts
+    return candidates, vote_counts
 
