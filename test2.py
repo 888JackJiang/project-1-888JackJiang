@@ -81,6 +81,24 @@ def positional_voting(ballots, weights):
 
     sorted_total_scores= sorted(cadi_total_scores_dict.values())  # ascending by number of totals scores.
     
+    
+    sorted_candidates =[]
+        # create a one-to-one mapping from vote count to candidate
+    for i in range(len( sorted_total_scores)):
+            # for each vote count to get the corresponding value in dictionary
+            current_value = sorted_total_scores[i]
+            
+            # check for the repeated situation for scores.
+            if current_value == sorted_total_scores[i-1]: 
+                
+                # if same we donn't consider it because we have already added the candidate number for the previous one
+                continue 
+    
+            # loop through the dictionary to find the corresponding candidate number
+            for key, value in cadi_total_scores_dict.items():   # key and value for finding each tuple in cadi_total_scores_dict.items()
+                if value == current_value:
+                    sorted_candidates.append(key)
+    
     # store all the sorted result into NumPy vector 
     candidates = np.array(soted_candidates)
     points =np.array(orted_total_scores)
