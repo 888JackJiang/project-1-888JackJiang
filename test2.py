@@ -44,6 +44,14 @@ def positional_voting(ballots, weights):
     total_scores = np.zeros(num_candidates)  
     
     # create the dictionary for  because we need to loop through weights with their corresponding preference level for each loop (we need to calculate the scores for all the candiates)
+    
+    weights_dict = {}
+    # we create the key as preference level 0,1,2,... and value as corresponding weight from weights list
+    index = 0 
+    for w in weights:
+        weights_dict[index] = w
+        index += 1
+
 
     # Now loop through the weights_dict to get each preference and its corresponding weight
     for preference, weight in weights_dict.items():
