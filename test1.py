@@ -76,7 +76,6 @@ def count_votes(ballots, preference=0, sort_by='count'):
                     sorted_candidates.append(key)
         
         
-        
 
     # This is the reverse process above we need to sort candidate firstly
     else:  # sort_by == 'candidate'
