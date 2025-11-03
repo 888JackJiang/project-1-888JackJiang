@@ -277,7 +277,21 @@ def eliminate_next(ballots):
 
 
 def run_election(ballots, display=False):
+    
     '''
+    
+    
+    Inputs:
+    ----------
+    ballots : 
+        (np.ndarray)
+        A 2D NumPy array :each row represents a single voter's ballots over all candidates, and each column is preference.
+    
+    display : 
+        (bool)
+        If True, prints a readable summary of vote transfers at each elimination stage 
+        using the `vote_transfers()` helper function. Default is False.
+
     
     Method:
     1. Call `eliminate_next(ballots)` to determine the candidate with the fewest first-choice votes.
@@ -338,9 +352,18 @@ def run_election(ballots, display=False):
             vote_transfers(previous_ballots=previous_ballots, updated_ballots=current_ballots)
             
             
-    
+    # The remaining candidate is the winner
+    # we need to catch the candidate in candidates one by one until we find a candidate who isn't in the eliminated candidates list.
+    for candidate in range(1, num_candidates + 1):
+        if candidate not in eliminated_candidates:
+            winner = candidate
+            break
+    # there we want to return the final result and set eliminated_candidates as an Numpy vector.
     # there we want to return the final result and set eliminated_candidates as an Numpy vector.
     return winner, np.array(eliminated_candidates)
+
+
+
 
 
 
