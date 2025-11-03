@@ -44,14 +44,12 @@ def positional_voting(ballots, weights):
     total_scores = np.zeros(num_candidates)  
     
     # create the dictionary for  because we need to loop through weights with their corresponding preference level for each loop (we need to calculate the scores for all the candiates)
-    
     weights_dict = {}
     # we create the key as preference level 0,1,2,... and value as corresponding weight from weights list
     index = 0 
     for w in weights:
         weights_dict[index] = w
         index += 1
-
 
     # Now loop through the weights_dict to get each preference and its corresponding weight
     for preference, weight in weights_dict.items():
@@ -82,29 +80,30 @@ def positional_voting(ballots, weights):
     sorted_total_scores= sorted(cadi_total_scores_dict.values())  # ascending by number of totals scores.
     
     
+        
+        # set the initial empty list to store the corresponding candidate number after sorting
     sorted_candidates =[]
         # create a one-to-one mapping from vote count to candidate
     for i in range(len( sorted_total_scores)):
             # for each vote count to get the corresponding value in dictionary
             current_value = sorted_total_scores[i]
             
-            # check for the repeated situation for scores.
-            if current_value == sorted_total_scores[i-1]: 
+            if i < len(sorted_total_scores)-1: # ensure that we cannot move outside the sorted_total_scores when we are checking the next item.
+                # check for the repeated situation for scores.
+                if current_value == sorted_total_scores[i+1]: 
                 
-                # if same we donn't consider it because we have already added the candidate number for the previous one
-                continue 
+                    # if same we donn't consider it because we have already added the candidate number for the next one
+                    continue 
     
-            # loop through the dictionary to find the corresponding candidate number
+                # loop through the dictionary to find the corresponding candidate number
             for key, value in cadi_total_scores_dict.items():   # key and value for finding each tuple in cadi_total_scores_dict.items()
                 if value == current_value:
                     sorted_candidates.append(key)
-    
     # store all the sorted result into NumPy vector 
-    candidates = np.array(soted_candidates)
-    points =np.array(orted_total_scores)
+    
+    candidates = np.array(sorted_candidates)
+    points =np.array(sorted_total_scores)
     return candidates, points
-
-
 
 
 
