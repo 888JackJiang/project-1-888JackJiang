@@ -150,6 +150,16 @@ def vote_transfers(previous_ballots, updated_ballots):
         if np.sum(previous_ballots[i,:])==0 :
             discarded_pre += 1 # update the value find the row is 0 (discarded) plus1
             
+            
+    # next we update all the ballots based on the elimination.    
+    # the same operation as discarded_prev, we want to find the discarded numbers in updated ballots
+    # Initialise
+    discarded_upd = 0 # we start the loop which we want to do a accumulation for the the number    
+    
+    for i in range(n_votes): # the same number of the row for previous_ballots and updated_ballots.
+        # the same operation as before.
+        if np.sum(updated_ballots[i,:])==0 :
+            discarded_upd += 1  # update the value find the row is 0 (discarded) plus1    
     # avoid the type is different before difference ; there we both use a Numpy vector
     discarded_upd = np.array(discarded_upd)
     discarded_prev = np.array(discarded_prev)       
