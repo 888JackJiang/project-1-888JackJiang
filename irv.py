@@ -176,4 +176,121 @@ def vote_transfers(previous_ballots, updated_ballots):
 
 
 
+######
+
+
+def eliminate_next(ballots):
+    
+    '''
+    Determine which candidate should be eliminated next in an Instant Runoff Voting (IRV) round.
+    there we consider the situation which we have no ties or ties.
+
+    Input:
+    ----------
+    ballots : 
+    (Numpy array)
+    This is a two-dimensional NumPy array, where each row represents the ranking preference of a voter (each column corresponds to a candidate number).
+    Output :
+    -------
+    int
+    The numbers of the candidates to be eliminated next (starting from 1) are determined based on the fewest votes they received in their first choice.
+    In case of a tie, the subsequent ballots (second, third, etc.) will be checked one by one.
+    If there is still a tie, the candidate with the smallest number will be eliminated.
+    
+    
+    '''
+    
+    
+    
+    num_prefs = ballots.shape[1]   # total number of preference columns
+    # we firstly run the fisrt-preference situation( may be including the ties)
+    candidates, counts = bd.count_votes(ballots, preference=0)
+    # store candidate counts as a dictionary
+    cand_counts = dict(zip(candidates, counts))
+    
+    
+    
+    ####### There we will run the tie-resolving rule ###########
+    
+    ##### we initialise ######
+    
+    
+    # we cath the least value for the candidates in fisrt-preference choice( including the ties)
+    min_count = min(cand_counts.values())
+    # find all candidates tied with the fewest votes
+    tied = [c for c, v in cand_counts.items() if v == min_count]
+    # we restore into a meaningful variable to illustrate the tied to corresponding counts.
+    counts_for_tied = min_count
+    # There we create Tie-resolving rule.
+    # initialise: there we want to loop starting from pre_level =1  which means from the second preference.
+    pref_level = 1
+    # we need to keep comparing if we always satisfy : there still exists ties after we run the tie-resolving rule.
+    # but we cannot run all the time if we cannot reduce all the ties so our looping step can't exceed the number of preference.
+    
+    if len(tied) == 1: # no ties' situation
+        return tied[0]
+    
+    else:
+    
+        while len(tied) > 1 and pref_level < num_prefs:
+        
+        
+            cand, count = bd.count_votes(ballots, preference=pref_level)
+            # we want to a generalized method too: if we set the argument sort_by = " count" which means the candidates and their counts can't correspond
+            # cani= [1, 2, 3, 4, 5, ...] one to one mapping the counts ( the index of the candi = the candi value of corresponding index = the count value of correspnding index)
+            # so if we know the count, we can catch the corresponding the candidate.
+        
+        
+        
+            # Then we create the dictionary for cand and count
+            # initialise 
+            cand_count = {}
+            # we want to loop the indices of the cand_count we can use the range(len(cand)) because of the length of cand_count and can are the same.
+            for i in range(len(cand)):
+                cand_count[cand[i]] = count[i]
+                # we know the length of count = the length of the cand and we already get the value of the count,
+                # and so we don't need to update the value by manually.
+        
+        
+            # we want to extract the next step's candidates and ties
+            # Next to solve this we will store them in a dictionary.
+            cand_tied_counts_dict = {}
+            # there we want to catch:  only keep the tied candidates, and check their counts
+
+            for i in range(len(tied)): 
+                keys = [ key for key in cand_count.keys() if key == tied[i]]
+                num_items_of_dic = len(keys) # you also can usethe numbers of the items in cand_tied_counts_dict are the same as in keys(extracted)
+            
+                # find the corresponding value from for each key in keys and store them in cand_tied_counts_dict
+                for j in range(num_items_of_dic):
+                    cand_tied_counts_dict[keys[j]] = cand_count[keys[j]]
+        
+        
+            # To check whether or not they are still tied, we can catch any number(for the keys(candidates) corresponding values) from the candi_tied_counts_dict
+            # if the any number is equal to the left numbers -> these candidates exits tied.( but the number of the ties may be reduced or still unchanged)
+            # if the any number isn't equal to the left numbers -> these candidates are not tied.
+        
+            # There, we use min function simply to catch a value from the tied_counts dictionary to check whether or not  they are the same.
+            min_count = min(cand_tied_counts_dict.values())
+        
+            # How do we know matching result ( the number of matching):
+            # firstly we can use logical operation to get their boolen values and sum up to get the macthcing numbers 
+            # Secondly, we can first catch which the items are match the number and store them in a list, and finally calculate the 
+            tied = [c for c, v in cand_tied_counts_dict.items() if v == min_count]
+        
+            # check whether or not elimination progress is finished means the elements in tied is only one.
+            if len(tied) == 1:
+                return tied[0]
+            
+            pref_level += 1 # update : going the the next preference to resolve.
+    
+    
+        # if still tied, eliminate the smallest candidate number
+    return min(tied)
+
+
+
+
+
+
 
