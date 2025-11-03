@@ -235,7 +235,20 @@ def eliminate_next(ballots):
                 cand_count[cand[i]] = count[i]
                 # we know the length of count = the length of the cand and we already get the value of the count,
                 # and so we don't need to update the value by manually.
-        
+            
+            
+            # we want to extract the next step's candidates and ties
+            # Next to solve this we will store them in a dictionary.
+            cand_tied_counts_dict = {}
+            # there we want to catch:  only keep the tied candidates, and check their counts
+
+            for i in range(len(tied)): 
+                keys = [ key for key in cand_count.keys() if key == tied[i]]
+                num_items_of_dic = len(keys) # you also can usethe numbers of the items in cand_tied_counts_dict are the same as in keys(extracted)
+            
+                # find the corresponding value from for each key in keys and store them in cand_tied_counts_dict
+                for j in range(num_items_of_dic):
+                    cand_tied_counts_dict[keys[j]] = cand_count[keys[j]]
         
         
             # To check whether or not they are still tied, we can catch any number(for the keys(candidates) corresponding values) from the candi_tied_counts_dict
@@ -249,6 +262,14 @@ def eliminate_next(ballots):
             # firstly we can use logical operation to get their boolen values and sum up to get the macthcing numbers 
             # Secondly, we can first catch which the items are match the number and store them in a list, and finally calculate the 
             tied = [c for c, v in cand_tied_counts_dict.items() if v == min_count]
+            
+            
+            # check whether or not elimination progress is finished means the elements in tied is only one.
+            if len(tied) == 1:
+                return tied[0]
+            
+            pref_level += 1 # update : going the the next preference to resolve.
+    
         
         # if still tied, eliminate the smallest candidate number
     return min(tied)
