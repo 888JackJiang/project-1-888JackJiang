@@ -45,13 +45,15 @@ def update_ballots(ballots, to_eliminate):
         new_row = [value for value in row if (value != to_eliminate)]  # using array to stor
         
         
+        if len(new_row) <  pre_updated_ballots.shape[1]: # if the length of new_row_vals is less than the number of columns
+            # we need to fill the rest with zeros
+            new_row.append(0)
 
         # convert the new_row to an 1-D array and then assign back to updated array
         updated_ballots[i, :] = np.array(new_row)
 
     # After the whole looping we get the updated_ballots
     return updated_ballots
-
 
 
 
