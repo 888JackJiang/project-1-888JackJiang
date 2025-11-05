@@ -33,24 +33,29 @@ def update_ballots(ballots, to_eliminate):
     n_rows = pre_updated_ballots.shape[0] # we get the number of the rows
     n_cols = pre_updated_ballots.shape[1] # we get the number of the columns
 
-    # pre_updated_ballots and updated_ballots have the same shape
-    updated_ballots = np.zeros((n_rows, n_cols)) # create an array with the same shape as pre_updated_ballots to store the updated ballots
-    
-    # we loop through each row to catch the eliminated candidate and then we update the ballots as redistribute the candidate number
-    for i in range(n_rows):
-        row = np.array(pre_updated_ballots[i, :])           # get the current row i from the pre_updated_ballots array
-        # Build an updated row by storing values that not the eliminated candidate( we find the eliminated candidate and remove it),
-        # preserving original left-to-right order.
-        # why use list because np.array has no attribute for append so we must using list to store here
-        new_row = [value for value in row if (value != to_eliminate)]  # using array to stor
-        
-        
-        if len(new_row) <  pre_updated_ballots.shape[1]: # if the length of new_row_vals is less than the number of columns
-            # we need to fill the rest with zeros
-            new_row.append(0)
+    # give the updated_ballots an initial value ballots and don't break the value of ballots using copy().
+    updated_ballots = ballots.copy()
 
-        # convert the new_row to an 1-D array and then assign back to updated array
-        updated_ballots[i, :] = np.array(new_row)
+    for i in range(n_rows):
+
+        # to find the index for each row where is the elimination candidate.
+        where_to_elimination = pre_updated_ballots[i,:]== to_eliminate
+        # in the row_i find the exact column index for candidate = to_eliminate
+        
+        elimination_index_list= [k for k in range(n_cols )  if where_to_elimination[k]==True ]
+        
+        if len(elimination_index_list) != 0:
+            elimination_index = elimination_index_list[0]
+            # create a new vector or list for using each row_i from the index to the end, finally we add an extra zero.
+            # we need the shifted ones' vector staring from the next candidate(eliminated).
+            new_row = pre_updated_ballots[i,(elimination_index+1):(n_cols)]
+            
+            # cover the original position: left shift one.
+            updated_ballots[i,elimination_index:(n_cols -1)] = new_row
+            updated_ballots[i,n_cols-1] = 0
+            
+        # if == 0 we don't do any change.
+            
 
     # After the whole looping we get the updated_ballots
     return updated_ballots
@@ -60,11 +65,7 @@ def update_ballots(ballots, to_eliminate):
 
 
 
-
-
-
 ###### undo
-
 
 
 
@@ -138,6 +139,7 @@ def vote_transfers(previous_ballots, updated_ballots):
     # we create the vote_ diffs: after - before.
     vote_diffs = upd_counts - prev_counts
     
+    
 
     # Next we start counting discarded ballots
     
@@ -148,7 +150,7 @@ def vote_transfers(previous_ballots, updated_ballots):
         # we check whether or not the row i all the elements are zero 
         # the condition is that when row i each element is 0 then the sum of all the elements are zero, if there exists no zero item then the sum of the row isn't equal to zero
         if np.sum(previous_ballots[i,:])==0 :
-            discarded_pre += 1 # update the value find the row is 0 (discarded) plus1
+            discarded_prev += 1 # update the value find the row is 0 (discarded) plus1
             
             
     # next we update all the ballots based on the elimination.    
@@ -166,12 +168,11 @@ def vote_transfers(previous_ballots, updated_ballots):
     
     # get the total situation before and after
     discarded_diff = discarded_upd - discarded_prev
+    
+    
+    
 
     return candidates, vote_diffs, discarded_diff
-
-
-
-
 
 
 
@@ -206,10 +207,37 @@ def eliminate_next(ballots):
     # we firstly run the fisrt-preference situation( may be including the ties)
     candidates, counts = bd.count_votes(ballots, preference=0)
     # store candidate counts as a dictionary
-    cand_counts = dict(zip(candidates, counts))
+    
+    # here we consider only one candidate in first preference, others are zero votes. A very very special situation.
+    record_zeros_candidate = 0
+    for i in range(num_prefs):
+        if counts[i]==0:
+            record_zeros_candidate +=1
+    if record_zeros_candidate == (num_prefs-1):
+            
+        return print(' noting to eliminate there exist only one candidate to be elected directly.')
     
     
-    
+    cand_counts = {}
+            # we want to loop the indices of the cand_count we can use the range(len(candidates)) because of the length of cand_count and can are the same.
+    for i in range(len(candidates)):
+        
+
+        
+        #!!!! because we need to extract the candidate for no valid in the ballots(including removing)!!!
+        if  counts[i] != 0 :
+            cand_counts[candidates[i]] = counts[i]
+        
+        # now when counts[i] == 0 is True which means the first preference has zero votes for some candidate.
+        Num_row_include_candidate_i = 0
+        for k in range(num_prefs):
+        # for j in range(ballots.shape[0]):
+            Num_row_include_candidate_i += len(ballots[bd.ballot_selector(ballots, candidate=candidates[i], preference=k)])
+        
+        # !!!! to check whether or not other preference has this candidate to be eliminated in the following process though no candidate i in first preference.
+        if counts[i] == 0 and Num_row_include_candidate_i != 0 :
+            return candidates[i]
+
     ####### There we will run the tie-resolving rule ###########
     
     ##### we initialise ######
@@ -247,9 +275,11 @@ def eliminate_next(ballots):
             cand_count = {}
             # we want to loop the indices of the cand_count we can use the range(len(cand)) because of the length of cand_count and can are the same.
             for i in range(len(cand)):
-                cand_count[cand[i]] = count[i]
-                # we know the length of count = the length of the cand and we already get the value of the count,
-                # and so we don't need to update the value by manually.
+                #!!!! because we need to extract the candidate for no valid in the ballots(including removing)!!!
+                if  count[i] != 0 :
+                    cand_count[cand[i]] = count[i]
+                    # we know the length of count = the length of the cand and we already get the value of the count,
+                    # and so we don't need to update the value by manually.
         
         
             # we want to extract the next step's candidates and ties
@@ -287,6 +317,97 @@ def eliminate_next(ballots):
     
         # if still tied, eliminate the smallest candidate number
     return min(tied)
+
+
+
+
+
+def run_election(ballots, display=False):
+    '''
+    
+    Inputs:
+    ----------
+    ballots : 
+        (np.ndarray)
+        A 2D NumPy array :each row represents a single voter's ballots over all candidates, and each column is preference.
+    
+    display : 
+        (bool)
+        If True, prints a readable summary of vote transfers at each elimination stage 
+        using the `vote_transfers()` helper function. Default is False.
+
+    
+    Method:
+    1. Call `eliminate_next(ballots)` to determine the candidate with the fewest first-choice votes.
+    2. Add this candidate to the `eliminated` list.
+    3. Call `update_ballots(ballots, candidate)` to remove this candidate from all ballots.
+    4. If `display=True`, it is optional to call `vote_transfers()` to show how the ballots are redistributed.
+    When there is only one candidate remaining that has not been eliminated, this candidate is declared the winner.
+    
+    Outputs:
+    -------
+    winner : 
+        (int)
+        The final result of the remaining candidates' numbers (counting from 1) - that is, the winner of the election.
+        If the final candidate 1 is left so that candidate 1 is the winner.
+        
+    eliminated : 
+        (np.ndarray) 
+        A 1D NumPy array vector or you can write a list listing candidates in the order they were eliminated.
+        The length of this array is  (number of candidates - 1). The total number of the candidates - the number of the candidates eliminated.
+    
+    
+    
+    '''
+    
+    # tally all the number of the candidates:
+    num_candidates = ballots.shape[1] # using shape to get the attribute of the array ballots 1 represents column
+    # we store the according to the looping order when I search for who is prepared to be eliminated, we eliminate an candidate I store it in the list
+    eliminated_candidates = []
+    #  tally all the number of the candidates are eliminated.
+    num_eliminated_candidates = len(eliminated_candidates)
+    # set a separated ballots as the election initial value, at the same time we shouldn't break the original data for ballots
+    # because we will update the ballots for each stage after the candidate is eliminated before we go to the next stage.
+    current_ballots = ballots.copy()
+    
+    # the left number of the candidates who aren't eliminated.
+    left_num_candidates = num_candidates - num_eliminated_candidates
+    
+    # Continue until only one candidate remains: we must eliminate the candidates until we have one left
+    while left_num_candidates > 1:
+        
+        # using the eliminate_next function to find who to eliminate
+        elim_candi = eliminate_next(current_ballots)
+        # eliminated_candidates as a list we can using append attribute to push a new candidate on the last term which matches the next position corresponding to the new 
+        # , eliminated candidate chosen.
+        # update the eliminated candidate for each stage.
+        eliminated_candidates.append(elim_candi)
+        
+        previous_ballots = current_ballots.copy()
+        
+        # Update ballots for next round ( after we eliminate the candidate )
+        current_ballots =update_ballots(ballots=current_ballots, to_eliminate=elim_candi)
+        
+        # update the number of the eliminated_candidates.
+        num_eliminated_candidates = len(eliminated_candidates)
+        
+        left_num_candidates = num_candidates - num_eliminated_candidates
+        
+        # Optional display of vote transfers
+        # there if argument display is equal to True: we want to see the transfers result for each stage after we eliminate the candidate
+        if display:
+            print(f"candidates vote_differs discarded_diff respectively:{vote_transfers(previous_ballots=previous_ballots, updated_ballots=current_ballots)}")
+            
+            
+    # The remaining candidate is the winner
+    # we need to catch the candidate in candidates one by one until we find a candidate who isn't in the eliminated candidates list.
+    for candidate in range(1, num_candidates + 1):
+        if candidate not in eliminated_candidates:
+            winner = candidate
+            break
+    # there we want to return the final result and set eliminated_candidates as an Numpy vector.
+    return winner, np.array(eliminated_candidates)
+
 
 
 
